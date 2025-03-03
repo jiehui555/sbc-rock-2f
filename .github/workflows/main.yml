@@ -34,3 +34,12 @@ jobs:
    
       - name: Show output
         run: ls -alh output
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: u-boot-radxa-output
+          path: |
+            output/
+            logs/
+          retention-days: 7
