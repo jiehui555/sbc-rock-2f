@@ -1,10 +1,13 @@
 #!/bin/bash
 
-# Define Docker image name
-IMAGE_NAME="rock-2f-uboot-builder"
+# Set working directory inside the container
+WORKSPACE_DIR="/workspace"
+
+# Ensure script runs in the correct directory
+cd "$WORKSPACE_DIR" || exit 1
 
 # Create logs directory if it doesn't exist
-LOG_DIR="./logs"
+LOG_DIR="$WORKSPACE_DIR/logs"
 mkdir -p "$LOG_DIR"
 
 # Generate log file with timestamp
@@ -33,68 +36,53 @@ trap cleanup EXIT                                # Execute cleanup on exit
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-# Step 1: Build the Docker image
-echo "🚀 Building Docker image: $IMAGE_NAME ..."
-sudo docker build -t "$IMAGE_NAME" .
+# Step 1: Change directory to u-boot
+echo "✅ Inside Docker container..."
+cd u-boot
 
-# Step 2: Run the Docker container
-echo "✅ Running Docker container..."
-sudo docker run --rm --user $(id -u):$(id -g) -v $(pwd)/u-boot:/workspace/u-boot -v $(pwd)/rkbin:/workspace/rkbin "$IMAGE_NAME" bash -c "
-    # Change directory to u-boot
-    cd u-boot
-    echo '✅ Inside Docker container...'
+# Step 2: Build U-Boot for Rock-2F
+echo "🚀 Building U-Boot for Rock-2F..."
+./make.sh rock-2-rk3528
+echo "✅ U-Boot build completed for rock-2-rk3528"
 
-    # Build U-Boot for Rock-2F
-    ./make.sh rock-2-rk3528
-    echo '✅ U-Boot build completed for rock-2-rk3528'
+# Step 3: Build the bootloader
+echo "🔧 Building bootloader..."
+./make.sh loader
+echo "✅ Bootloader build completed"
 
-    # Build the bootloader
-    ./make.sh loader
-    echo '✅ Bootloader build completed'
+# Step 4: Generate the ITB (Image Tree Blob)
+echo "🛠 Generating ITB..."
+./make.sh itb
+echo "✅ ITB build completed"
 
-    # Generate the ITB (Image Tree Blob)
-    ./make.sh itb
-    echo '✅ ITB build completed'
-"
-
-# Step 3: Validate output files
+# Step 5: Validate output files
 echo "🔍 Checking generated files..."
-if [[ ! -f "./rkbin/idblock.img" ]]; then
-    echo "⚠️ Warning: Missing file ./rkbin/idblock.img"
+if [[ ! -f "$WORKSPACE_DIR/rkbin/idblock.img" ]]; then
+    echo "⚠️ Warning: Missing file $WORKSPACE_DIR/rkbin/idblock.img"
     exit 1
 fi
 
-if [[ ! -f "./u-boot/u-boot.itb" ]]; then
-    echo "⚠️ Warning: Missing file ./u-boot/u-boot.itb"
+if [[ ! -f "$WORKSPACE_DIR/u-boot/u-boot.itb" ]]; then
+    echo "⚠️ Warning: Missing file $WORKSPACE_DIR/u-boot/u-boot.itb"
     exit 1
 fi
 
 echo "✅ Required files found!"
 
-# Step 4: Check if 'output' folder exists
-OUTPUT_DIR="./output"
+# Step 6: Check if 'output' folder exists
+OUTPUT_DIR="$WORKSPACE_DIR/output"
 if [[ -d "$OUTPUT_DIR" ]]; then
-    read -p "⚠️ The output folder already exists. Do you want to delete it? (y/n): " choice
-    case "$choice" in
-    y | Y)
-        echo "🗑 Deleting output folder..."
-        rm -rf "$OUTPUT_DIR"
-        ;;
-    n | N) echo "⚠️ Keeping existing output folder. Files may be overwritten." ;;
-    *)
-        echo "❌ Invalid input. Exiting."
-        exit 1
-        ;;
-    esac
+    echo "⚠️ The output folder already exists. Deleting it..."
+    rm -rf "$OUTPUT_DIR"
 fi
 
-# Step 5: Create output folder and copy generated files
+# Step 7: Create output folder and copy generated files
 echo "📁 Creating output directory..."
 mkdir -p "$OUTPUT_DIR"
 
 echo "📄 Copying generated files..."
-cp ./rkbin/idblock.img "$OUTPUT_DIR/"
-cp ./u-boot/u-boot.itb "$OUTPUT_DIR/"
+cp "$WORKSPACE_DIR/rkbin/idblock.img" "$OUTPUT_DIR/"
+cp "$WORKSPACE_DIR/u-boot/u-boot.itb" "$OUTPUT_DIR/"
 
 echo "✅ Build process completed successfully!"
 echo "📜 Log saved to: $LOG_FILE"

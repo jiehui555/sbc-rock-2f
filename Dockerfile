@@ -36,13 +36,3 @@ EOT
 COPY --from=python2-build /usr/local/bin/python2.7 /usr/local/bin/python2.7
 COPY --from=python2-build /usr/local/lib/python2.7 /usr/local/lib/python2.7
 RUN ln -s /usr/local/bin/python2.7 /usr/bin/python2
-
-RUN wget --timeout=5 --tries=3 https://releases.linaro.org/components/toolchain/binaries/6.3-2017.05/aarch64-linux-gnu/gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu.tar.xz
-RUN <<EOT
-    mkdir -p ./prebuilts/gcc/linux-x86/aarch64
-    tar -xf gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu.tar.xz -C ./prebuilts/gcc/linux-x86/aarch64
-    rm gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu.tar.xz
-EOT
-
-# /workspace/prebuilts/gcc/linux-x86/aarch64/gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu
-# ../prebuilts/gcc/linux-x86/aarch64/gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu/bin
