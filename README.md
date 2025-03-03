@@ -17,6 +17,19 @@ git submodule update --init --recursive
 ./build.sh
 ```
 
+编译成功后，会在 `output` 文件夹生成 `idblock.img` 和 `u-boot.itb` 文件。
+
+# 使用
+
+将读卡器（TF 卡）插入编译主机，以 `/dev/sdb` 设备名为例：
+
+```bash
+sudo dd if=output/idblock.img of=/dev/sdb seek=64
+sudo dd if=output/u-boot.itb of=/dev/sdb seek=16384
+```
+
+插入开发板，连接串口工具，启动测试...
+
 # 开发
 
 获取代码：
