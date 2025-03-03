@@ -3,6 +3,16 @@
 # Define Docker image name
 IMAGE_NAME="rock-2f-uboot-builder"
 
+# Create logs directory if it doesn't exist
+LOG_DIR="./logs"
+mkdir -p "$LOG_DIR"
+
+# Generate log file with timestamp
+LOG_FILE="$LOG_DIR/build_$(date '+%Y-%m-%d_%H-%M-%S').log"
+
+# Redirect all script output to the log file while still showing it in the terminal
+exec > >(tee -a "$LOG_FILE") 2>&1
+
 # Error handling function
 error_handler() {
     echo "❌ An error occurred!"
@@ -87,3 +97,4 @@ cp ./rkbin/idblock.img "$OUTPUT_DIR/"
 cp ./u-boot/u-boot.itb "$OUTPUT_DIR/"
 
 echo "✅ Build process completed successfully!"
+echo "📜 Log saved to: $LOG_FILE"
