@@ -1,4 +1,4 @@
-IMAGE_NAME = sbc-rock-2f/u-boot-radxa-builder
+IMAGE_NAME = sbc-rock-2f/radxa-u-boot-builder
 
 .PHONY: builder build clean clean-all
 

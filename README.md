@@ -7,7 +7,7 @@
 获取代码：
 
 ```bash
-git pull --branch=u-boot-radxa --depth=1 https://github.com/jiehui555/sbc-rock-2f.git
+git pull --branch=radxa-u-boot --depth=1 https://github.com/jiehui555/sbc-rock-2f.git
 ```
 
 构建 Docker 编译环境：
@@ -41,7 +41,7 @@ sudo dd if=output/u-boot.itb of=/dev/sdb seek=16384
 
 ```bash
 git pull https://github.com/jiehui555/sbc-rock-2f.git
-git checkout u-boot-radxa
+git checkout radxa-u-boot
 ```
 
 在 `overlay/u-boot` 中存放修改后的代码，它会在编译时覆盖到 u-boot 代码。

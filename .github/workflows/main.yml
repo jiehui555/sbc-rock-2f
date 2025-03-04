@@ -3,7 +3,7 @@ name: Build Radxa U-Boot
 on:
   push:
     branches:
-    - u-boot-radxa
+    - radxa-u-boot
 
 jobs:
   build:
@@ -21,7 +21,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          tags: sbc-rock-2f/u-boot-radxa-builder:latest
+          tags: sbc-rock-2f/radxa-u-boot-builder:latest
           load: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -30,7 +30,7 @@ jobs:
         run: docker images
 
       - name: Build U-Boot
-        run: docker run --rm -v $(pwd):/workspace sbc-rock-2f/u-boot-radxa-builder:latest ./build.sh
+        run: docker run --rm -v $(pwd):/workspace sbc-rock-2f/radxa-u-boot-builder:latest ./build.sh
    
       - name: Show output
         run: ls -alh output
@@ -38,7 +38,7 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: u-boot-radxa-output
+          name: radxa-u-boot-output
           path: |
             output/
             build/logs/
