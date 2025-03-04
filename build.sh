@@ -27,7 +27,7 @@ exec > >(tee -a "$LOG_FILE") 2>&1
 # Error handling function
 error_handler() {
     echo "❌ An error occurred!"
-    echo "⚠️  Line number: $1"
+    echo "⚠️ Line number: $1"
     echo "📝 Command: $2"
     exit 1
 }
@@ -51,17 +51,27 @@ cd "$BUILD_DIR"
 # Download rkbin library
 if [[ ! -d "rkbin" ]]; then
     echo "📥 Cloning rkbin repository..."
-    git clone --depth=1 --branch=master https://github.com/rockchip-linux/rkbin
+    git clone --depth=1 --branch=master https://github.com/rockchip-linux/rkbin && echo "✅ rkbin repository successfully cloned."
 else
-    echo "✅ rkbin repository already exists. Skipping clone."
+    echo "⚠️ rkbin repository already exists. Skipping clone."
 fi
 
 # Download U-Boot library
 if [[ ! -d "u-boot" ]]; then
     echo "📥 Cloning U-Boot repository..."
-    git clone --depth=1 --branch=next-dev-v2024.10 https://github.com/radxa/u-boot
+    git clone --depth=1 --branch=next-dev-v2024.10 https://github.com/radxa/u-boot && echo "✅ U-Boot repository successfully cloned."
 else
-    echo "✅ U-Boot repository already exists. Skipping clone."
+    echo "⚠️ U-Boot repository already exists. Skipping clone."
+fi
+
+# Apply overlay modifications
+OVERLAY_DIR="$WORKSPACE_DIR/overlay"
+if [[ -d "$OVERLAY_DIR" ]]; then
+    echo "🔄 Applying overlay modifications..."
+    cp -rT "$OVERLAY_DIR" "$BUILD_DIR/"
+    echo "✅ Overlay applied successfully."
+else
+    echo "⚠️ No overlay directory found. Skipping overlay application."
 fi
 
 # Download cross-compile toolchain
@@ -72,11 +82,11 @@ TOOLCHAIN_ARCHIVE="$(basename "$TOOLCHAIN_URL")"
 
 if [[ ! -d "$TOOLCHAIN_DIR/gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu" ]]; then
     echo "📥 Downloading cross-compile toolchain..."
-    wget "$TOOLCHAIN_URL" -O "$TOOLCHAIN_ARCHIVE"
+    wget "$TOOLCHAIN_URL" -O "$TOOLCHAIN_ARCHIVE" && echo "✅ Cross-compile toolchain successfully downloaded."
     tar xf "$TOOLCHAIN_ARCHIVE" -C "$TOOLCHAIN_DIR"
     rm "$TOOLCHAIN_ARCHIVE"
 else
-    echo "✅ Cross-compile toolchain already exists. Skipping download."
+    echo "⚠️ Cross-compile toolchain already exists. Skipping download."
 fi
 
 # Step 2: Build U-Boot for Rock-2F

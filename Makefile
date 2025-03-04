@@ -12,9 +12,5 @@ build:
 		$(IMAGE_NAME) ./build.sh
 
 clean:
-	sudo docker rmi -f $(IMAGE_NAME) || true
-	echo "✅ Cleaned up Docker image: $(IMAGE_NAME)"
-
-clean-all:
 	rm -rf build/rkbin build/u-boot
 	echo "🧹 Removed rkbin and u-boot directories but kept the toolchain."
