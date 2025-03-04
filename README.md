@@ -42,3 +42,8 @@ git submodule update --init --recursive
 # 拉取最新的子模块代码
 git submodule update --remote
 ```
+
+# 参考
+
+- https://opensource.rock-chips.com/wiki_U-Boot
+- https://opensource.rock-chips.com/wiki_Boot_option

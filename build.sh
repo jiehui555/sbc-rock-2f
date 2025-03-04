@@ -6,8 +6,16 @@ WORKSPACE_DIR="/workspace"
 # Ensure script runs in the correct directory
 cd "$WORKSPACE_DIR" || exit 1
 
+# Create build directory
+BUILD_DIR="$WORKSPACE_DIR/build"
+if [[ -d "$BUILD_DIR" ]]; then
+    echo "⚠️ Build directory already exists. Please ensure it's clean before proceeding."
+else
+    mkdir -p "$BUILD_DIR"
+fi
+
 # Create logs directory if it doesn't exist
-LOG_DIR="$WORKSPACE_DIR/logs"
+LOG_DIR="$BUILD_DIR/logs"
 mkdir -p "$LOG_DIR"
 
 # Generate log file with timestamp
@@ -36,53 +44,82 @@ trap cleanup EXIT                                # Execute cleanup on exit
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-# Step 1: Change directory to u-boot
-echo "✅ Inside Docker container..."
-cd u-boot
+# Step 1: Clone repositories and prepare environment
+echo "✅ Preparing build environment..."
+cd "$BUILD_DIR"
+
+# Download rkbin library
+if [[ ! -d "rkbin" ]]; then
+    echo "📥 Cloning rkbin repository..."
+    git clone --depth=1 --branch=master https://github.com/rockchip-linux/rkbin
+else
+    echo "✅ rkbin repository already exists. Skipping clone."
+fi
+
+# Download U-Boot library
+if [[ ! -d "u-boot" ]]; then
+    echo "📥 Cloning U-Boot repository..."
+    git clone --depth=1 --branch=next-dev-v2024.10 https://github.com/radxa/u-boot
+else
+    echo "✅ U-Boot repository already exists. Skipping clone."
+fi
+
+# Download cross-compile toolchain
+TOOLCHAIN_DIR="$BUILD_DIR/prebuilts/gcc/linux-x86/aarch64"
+mkdir -p "$TOOLCHAIN_DIR"
+TOOLCHAIN_URL="https://releases.linaro.org/components/toolchain/binaries/6.3-2017.05/aarch64-linux-gnu/gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu.tar.xz"
+TOOLCHAIN_ARCHIVE="$(basename "$TOOLCHAIN_URL")"
+
+if [[ ! -d "$TOOLCHAIN_DIR/gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu" ]]; then
+    echo "📥 Downloading cross-compile toolchain..."
+    wget "$TOOLCHAIN_URL" -O "$TOOLCHAIN_ARCHIVE"
+    tar xf "$TOOLCHAIN_ARCHIVE" -C "$TOOLCHAIN_DIR"
+    rm "$TOOLCHAIN_ARCHIVE"
+else
+    echo "✅ Cross-compile toolchain already exists. Skipping download."
+fi
 
 # Step 2: Build U-Boot for Rock-2F
 echo "🚀 Building U-Boot for Rock-2F..."
+cd "$BUILD_DIR/u-boot"
 ./make.sh rock-2-rk3528
-echo "✅ U-Boot build completed for rock-2-rk3528"
 
 # Step 3: Build the bootloader
 echo "🔧 Building bootloader..."
 ./make.sh loader
-echo "✅ Bootloader build completed"
 
 # Step 4: Generate the ITB (Image Tree Blob)
 echo "🛠 Generating ITB..."
 ./make.sh itb
-echo "✅ ITB build completed"
 
 # Step 5: Validate output files
 echo "🔍 Checking generated files..."
-if [[ ! -f "$WORKSPACE_DIR/rkbin/idblock.img" ]]; then
-    echo "⚠️ Warning: Missing file $WORKSPACE_DIR/rkbin/idblock.img"
-    exit 1
-fi
+REQUIRED_FILES=(
+    "$BUILD_DIR/rkbin/idblock.img"
+    "$BUILD_DIR/u-boot/u-boot.itb"
+)
 
-if [[ ! -f "$WORKSPACE_DIR/u-boot/u-boot.itb" ]]; then
-    echo "⚠️ Warning: Missing file $WORKSPACE_DIR/u-boot/u-boot.itb"
-    exit 1
-fi
+for file in "${REQUIRED_FILES[@]}"; do
+    if [[ ! -f "$file" ]]; then
+        echo "⚠️ Warning: Missing file $file"
+        exit 1
+    fi
+done
 
-echo "✅ Required files found!"
+echo "✅ All required files found!"
 
-# Step 6: Check if 'output' folder exists
+# Step 6: Prepare output folder
 OUTPUT_DIR="$WORKSPACE_DIR/output"
 if [[ -d "$OUTPUT_DIR" ]]; then
     echo "⚠️ The output folder already exists. Deleting it..."
     rm -rf "$OUTPUT_DIR"
 fi
-
-# Step 7: Create output folder and copy generated files
-echo "📁 Creating output directory..."
 mkdir -p "$OUTPUT_DIR"
 
-echo "📄 Copying generated files..."
-cp "$WORKSPACE_DIR/rkbin/idblock.img" "$OUTPUT_DIR/"
-cp "$WORKSPACE_DIR/u-boot/u-boot.itb" "$OUTPUT_DIR/"
+# Step 7: Copy generated files
+echo "📄 Copying generated files to output directory..."
+cp "$BUILD_DIR/rkbin/idblock.img" "$OUTPUT_DIR/"
+cp "$BUILD_DIR/u-boot/u-boot.itb" "$OUTPUT_DIR/"
 
 echo "✅ Build process completed successfully!"
 echo "📜 Log saved to: $LOG_FILE"

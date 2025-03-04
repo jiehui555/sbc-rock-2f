@@ -41,5 +41,5 @@ jobs:
           name: u-boot-radxa-output
           path: |
             output/
-            logs/
+            build/logs/
           retention-days: 7
