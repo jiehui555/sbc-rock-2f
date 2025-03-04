@@ -8,13 +8,18 @@
 
 ```bash
 git pull --branch=u-boot-radxa --depth=1 https://github.com/jiehui555/sbc-rock-2f.git
-git submodule update --init --recursive
+```
+
+构建 Docker 编译环境：
+
+```bash
+make builder
 ```
 
 编译 U-Boot：
 
 ```bash
-./build.sh
+make build
 ```
 
 编译成功后，会在 `output` 文件夹生成 `idblock.img` 和 `u-boot.itb` 文件。
@@ -37,11 +42,9 @@ sudo dd if=output/u-boot.itb of=/dev/sdb seek=16384
 ```bash
 git pull https://github.com/jiehui555/sbc-rock-2f.git
 git checkout u-boot-radxa
-git submodule update --init --recursive
-
-# 拉取最新的子模块代码
-git submodule update --remote
 ```
+
+在 `overlay/u-boot` 中存放修改后的代码，它会在编译时覆盖到 u-boot 代码。
 
 # 参考
 
