@@ -1,15 +1,14 @@
 IMAGE_NAME = sbc-rock-2f/radxa-u-boot-builder
+UID := $(shell id -u)
+GID := $(shell id -g)
 
-.PHONY: builder build clean clean-all
+.PHONY: builder build clean
 
 builder:
-	sudo docker build -t $(IMAGE_NAME) .
+	sudo docker build --build-arg UID=$(UID) --build-arg GID=$(GID) -t $(IMAGE_NAME) .
 
 build:
-	sudo docker run --rm \
-		--user $(shell id -u):$(shell id -g) \
-		-v $(shell pwd):/workspace \
-		$(IMAGE_NAME) ./build.sh
+	sudo docker run --rm -v $(shell pwd):/workspace $(IMAGE_NAME) ./build.sh
 
 clean:
 	rm -rf build
