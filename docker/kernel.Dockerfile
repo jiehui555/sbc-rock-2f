@@ -16,7 +16,7 @@ RUN <<EOT
     # Install common utilities
     apt install -y bash-completion command-not-found git wget xz-utils
     # Install build tools and dependencies
-    apt install -y make gcc gcc-aarch64-linux-gnu libncurses-dev flex bison bc libssl-dev
+    apt install -y make gcc gcc-aarch64-linux-gnu device-tree-compiler libncurses-dev flex bison bc libssl-dev
     # Clean up apt cache to reduce image size
     apt clean && rm -rf /var/lib/apt/lists/*
 EOT
