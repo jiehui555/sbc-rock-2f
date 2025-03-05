@@ -13,9 +13,9 @@ RUN <<EOT
     sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list.d/debian.sources
     # Update the apt package list
     apt update
-    # Install common utilities like bash-completion, command-not-found, git, wget, and xz-utils
+    # Install common utilities
     apt install -y bash-completion command-not-found git wget xz-utils
-    # Install build tools and dependencies such as make, gcc, flex, bison, bc, and libssl-dev
+    # Install build tools and dependencies
     apt install -y make gcc gcc-aarch64-linux-gnu libncurses-dev flex bison bc libssl-dev
     # Clean up apt cache to reduce image size
     apt clean && rm -rf /var/lib/apt/lists/*
