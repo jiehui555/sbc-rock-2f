@@ -8,7 +8,7 @@ builder:
 	sudo docker build --build-arg UID=$(UID) --build-arg GID=$(GID) -t $(IMAGE_NAME) .
 
 build:
-	sudo docker run --rm -it -v $(shell pwd):/workspace $(IMAGE_NAME) bash
+	sudo docker run --rm -v $(shell pwd):/workspace $(IMAGE_NAME) ./build.sh
 
 clean:
 	rm -rf build
