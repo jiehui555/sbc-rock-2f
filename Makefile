@@ -12,5 +12,4 @@ build:
 		$(IMAGE_NAME) ./build.sh
 
 clean:
-	rm -rf build/rkbin build/u-boot
-	echo "🧹 Removed rkbin and u-boot directories but kept the toolchain."
+	rm -rf build

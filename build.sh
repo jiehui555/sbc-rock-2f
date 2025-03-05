@@ -74,19 +74,14 @@ else
     echo "⚠️ No overlay directory found. Skipping overlay application."
 fi
 
-# Download cross-compile toolchain
+# Download cross-compile toolchain from Git repository
 TOOLCHAIN_DIR="$BUILD_DIR/prebuilts/gcc/linux-x86/aarch64"
 mkdir -p "$TOOLCHAIN_DIR"
-TOOLCHAIN_URL="https://releases.linaro.org/components/toolchain/binaries/6.3-2017.05/aarch64-linux-gnu/gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu.tar.xz"
-TOOLCHAIN_ARCHIVE="$(basename "$TOOLCHAIN_URL")"
-
 if [[ ! -d "$TOOLCHAIN_DIR/gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu" ]]; then
-    echo "📥 Downloading cross-compile toolchain..."
-    wget "$TOOLCHAIN_URL" -O "$TOOLCHAIN_ARCHIVE" && echo "✅ Cross-compile toolchain successfully downloaded."
-    tar xf "$TOOLCHAIN_ARCHIVE" -C "$TOOLCHAIN_DIR"
-    rm "$TOOLCHAIN_ARCHIVE"
+    echo "📥 Cloning cross-compile toolchain repository..."
+    git clone --depth=1 https://github.com/rockchip-toybrick/gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu "$TOOLCHAIN_DIR/gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu" && echo "✅ Cross-compile toolchain successfully cloned."
 else
-    echo "⚠️ Cross-compile toolchain already exists. Skipping download."
+    echo "⚠️ Cross-compile toolchain already exists. Skipping clone."
 fi
 
 # Step 2: Build U-Boot for Rock-2F
